@@ -7,6 +7,9 @@ metadata:
     app: "{{ cit_dify_worker.project_name }}"
 spec:
   type: NodePort
+  ports:
+    - port: 5001
+      targetPort: 5001
   selector:
     app: "{{ cit_dify_worker.project_name }}"
 ---
@@ -30,6 +33,8 @@ spec:
         - name: "{{ cit_dify_worker.project_name }}"
           image: "{{ cit_dify_worker.main_docker_image }}"
           imagePullPolicy: Always
+          ports:
+            - containerPort: 5001
           envFrom:
             - configMapRef:
                 name: "{{ cit_dify_worker.project_name }}"
@@ -38,7 +43,7 @@ spec:
           volumeMounts:
             - name: genaihub-volumn-pvc
               mountPath: /app/api/storage
-              subPath: cit-dify-api
+              subPath: "cit-dify-api"
               readOnly: false
       volumes:
         - name: genaihub-volumn-pvc
