@@ -43,7 +43,7 @@ spec:
           volumeMounts:
             - name: genaihub-volumn-pvc
               mountPath: /app/api/storage
-              subPath: "cit-dify-api"
+              subPath: "{{ cit_dify_worker.volumn_path }}"
               readOnly: false
       volumes:
         - name: genaihub-volumn-pvc
