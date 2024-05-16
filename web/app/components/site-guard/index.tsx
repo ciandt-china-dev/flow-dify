@@ -1,18 +1,18 @@
 'use client'
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 const SiteGuard = () => {
   const router = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [promptShown, setPromptShown] = useState(false);
+  const promptShown = useRef(false);
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (router.startsWith('/chat') && !promptShown) {
+      if (router.startsWith('/chat') && !promptShown.current) {
         const password = prompt('Enter password:');
-        setPromptShown(true);
+        promptShown.current = true;
 
         if (password === 'cit2024') {
           setIsAuthenticated(true);
@@ -27,7 +27,7 @@ const SiteGuard = () => {
     };
 
     checkAuth();
-  }, [router, promptShown]);
+  }, [router]);
 
   if (isCheckingAuth) {
     return <div style={{ height: '100vh', backgroundColor: 'white' }} />;
