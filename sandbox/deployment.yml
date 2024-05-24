@@ -40,7 +40,3 @@ spec:
                 name: "{{ cit_dify_sandbox.project_name }}"
             - secretRef:
                 name: "{{ cit_dify_sandbox.project_name }}"
-          securityContext:
-            capabilities:
-              add:
-                - SYS_ADMIN
