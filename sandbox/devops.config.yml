@@ -1,0 +1,3 @@
+project_name: cit-dify-sandbox
+
+build_docker: false
