@@ -5,7 +5,10 @@ import {
   useCallback,
   useState,
 } from 'react'
-import cn from 'classnames'
+import {
+  RiZoomInLine,
+  RiZoomOutLine,
+} from '@remixicon/react'
 import { useKeyPress } from 'ahooks'
 import { useTranslation } from 'react-i18next'
 import {
@@ -19,18 +22,16 @@ import {
 import {
   getKeyboardKeyCodeBySystem,
   getKeyboardKeyNameBySystem,
+  isEventTargetInputArea,
 } from '../utils'
 import ShortcutsName from '../shortcuts-name'
 import TipPopup from './tip-popup'
+import cn from '@/utils/classnames'
 import {
   PortalToFollowElem,
   PortalToFollowElemContent,
   PortalToFollowElemTrigger,
 } from '@/app/components/base/portal-to-follow-elem'
-import {
-  ZoomIn,
-  ZoomOut,
-} from '@/app/components/base/icons/src/vender/line/editor'
 
 enum ZoomType {
   zoomIn = 'zoomIn',
@@ -128,10 +129,13 @@ const ZoomInOut: FC = () => {
   })
 
   useKeyPress('shift.1', (e) => {
-    e.preventDefault()
     if (workflowReadOnly)
       return
 
+    if (isEventTargetInputArea(e.target as HTMLElement))
+      return
+
+    e.preventDefault()
     zoomTo(1)
     handleSyncWorkflowDraft()
   }, {
@@ -140,10 +144,13 @@ const ZoomInOut: FC = () => {
   })
 
   useKeyPress('shift.2', (e) => {
-    e.preventDefault()
     if (workflowReadOnly)
       return
 
+    if (isEventTargetInputArea(e.target as HTMLElement))
+      return
+
+    e.preventDefault()
     zoomTo(2)
     handleSyncWorkflowDraft()
   }, {
@@ -152,10 +159,13 @@ const ZoomInOut: FC = () => {
   })
 
   useKeyPress('shift.5', (e) => {
-    e.preventDefault()
     if (workflowReadOnly)
       return
 
+    if (isEventTargetInputArea(e.target as HTMLElement))
+      return
+
+    e.preventDefault()
     zoomTo(0.5)
     handleSyncWorkflowDraft()
   }, {
@@ -224,7 +234,7 @@ const ZoomInOut: FC = () => {
                   zoomOut()
                 }}
               >
-                <ZoomOut className='w-4 h-4' />
+                <RiZoomOutLine className='w-4 h-4' />
               </div>
             </TipPopup>
             <div className='w-[34px]'>{parseFloat(`${zoom * 100}`).toFixed(0)}%</div>
@@ -239,7 +249,7 @@ const ZoomInOut: FC = () => {
                   zoomIn()
                 }}
               >
-                <ZoomIn className='w-4 h-4' />
+                <RiZoomInLine className='w-4 h-4' />
               </div>
             </TipPopup>
           </div>

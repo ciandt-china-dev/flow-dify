@@ -4,25 +4,27 @@ from datetime import datetime, timezone
 from typing import cast
 
 import yaml
-from flask import current_app
 from flask_login import current_user
 from flask_sqlalchemy.pagination import Pagination
 
+from configs import dify_config
 from constants.model_template import default_app_templates
 from core.agent.entities import AgentToolEntity
+from core.app.features.rate_limiting import RateLimit
 from core.errors.error import LLMBadRequestError, ProviderTokenNotInitError
 from core.model_manager import ModelManager
 from core.model_runtime.entities.model_entities import ModelPropertyKey, ModelType
 from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 from core.tools.tool_manager import ToolManager
 from core.tools.utils.configuration import ToolParameterConfigurationManager
-from events.app_event import app_model_config_was_updated, app_was_created, app_was_deleted
+from events.app_event import app_model_config_was_updated, app_was_created
 from extensions.ext_database import db
 from models.account import Account
 from models.model import App, AppMode, AppModelConfig
 from models.tools import ApiToolProvider
 from services.tag_service import TagService
 from services.workflow_service import WorkflowService
+from tasks.remove_app_and_related_data_task import remove_app_and_related_data_task
 
 
 class AppService:
@@ -47,10 +49,10 @@ class AppService:
         elif args['mode'] == 'channel':
             filters.append(App.mode == AppMode.CHANNEL.value)
 
-        if 'name' in args and args['name']:
+        if args.get('name'):
             name = args['name'][:30]
             filters.append(App.name.ilike(f'%{name}%'))
-        if 'tag_ids' in args and args['tag_ids']:
+        if args.get('tag_ids'):
             target_ids = TagService.get_target_ids_by_tag_ids('app',
                                                               tenant_id,
                                                               args['tag_ids'])
@@ -122,6 +124,8 @@ class AppService:
         app.icon = args['icon']
         app.icon_background = args['icon_background']
         app.tenant_id = tenant_id
+        app.api_rph = args.get('api_rph', 0)
+        app.api_rpm = args.get('api_rpm', 0)
 
         db.session.add(app)
         db.session.flush()
@@ -196,6 +200,7 @@ class AppService:
                 app_model=app,
                 graph=workflow.get('graph'),
                 features=workflow.get('features'),
+                unique_hash=None,
                 account=account
             )
             workflow_service.publish_workflow(
@@ -320,11 +325,15 @@ class AppService:
         """
         app.name = args.get('name')
         app.description = args.get('description', '')
+        app.max_active_requests = args.get('max_active_requests')
         app.icon = args.get('icon')
         app.icon_background = args.get('icon_background')
         app.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
         db.session.commit()
 
+        if app.max_active_requests is not None:
+            rate_limit = RateLimit(app.id, app.max_active_requests)
+            rate_limit.flush_cache(use_local_value=True)
         return app
 
     def update_app_name(self, app: App, name: str) -> App:
@@ -394,16 +403,8 @@ class AppService:
         """
         db.session.delete(app)
         db.session.commit()
-
-        app_was_deleted.send(app)
-
-        # todo async delete related data by event
-        # app_model_configs, site, api_tokens, installed_apps, recommended_apps BY app
-        # app_annotation_hit_histories, app_annotation_settings, app_dataset_joins BY app
-        # workflows, workflow_runs, workflow_node_executions, workflow_app_logs BY app
-        # conversations, pinned_conversations, messages BY app
-        # message_feedbacks, message_annotations, message_chains BY message
-        # message_agent_thoughts, message_files, saved_messages BY message
+        # Trigger asynchronous deletion of app and related data
+        remove_app_and_related_data_task.delay(app.id)
 
     def get_app_meta(self, app_model: App) -> dict:
         """
@@ -445,7 +446,7 @@ class AppService:
             # get all tools
             tools = agent_config.get('tools', [])
 
-        url_prefix = (current_app.config.get("CONSOLE_API_URL")
+        url_prefix = (dify_config.CONSOLE_API_URL
                       + "/console/api/workspaces/current/tool-provider/builtin/")
 
         for tool in tools:
