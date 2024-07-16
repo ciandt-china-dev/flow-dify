@@ -33,12 +33,12 @@ RUN yarn build
 # production stage
 FROM base AS production
 
-ENV NODE_ENV production
-ENV EDITION SELF_HOSTED
-ENV DEPLOY_ENV PRODUCTION
-ENV CONSOLE_API_URL https://chatwithdoc-api.flow.ciandt.cn
-ENV APP_API_URL https://chatwithdoc-api.flow.ciandt.cn
-ENV PORT 3000
+ENV NODE_ENV=production
+ENV EDITION=SELF_HOSTED
+ENV DEPLOY_ENV=PRODUCTION
+ENV CONSOLE_API_URL=https://chatwithdoc-api.platform.ciandt.cn
+ENV APP_API_URL=https://chatwithdoc-api.platform.ciandt.cn
+ENV PORT=3000
 
 # set timezone
 ENV TZ=UTC

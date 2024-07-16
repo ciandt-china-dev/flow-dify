@@ -19,19 +19,19 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
 
 # Install Python dependencies
-COPY pyproject.toml poetry.lock ./
+COPY api/pyproject.toml api/poetry.lock ./
 RUN poetry install --sync --no-cache --no-root
 
 # production stage
 FROM base AS production
 
-ENV FLASK_APP app.py
-ENV EDITION SELF_HOSTED
-ENV DEPLOY_ENV PRODUCTION
-ENV CONSOLE_API_URL https://chatwithdoc-api.flow.ciandt.cn
-ENV CONSOLE_WEB_URL https://chatwithdoc-api.flow.ciandt.cn
-ENV SERVICE_API_URL https://chatwithdoc-api.flow.ciandt.cn
-ENV APP_WEB_URL https://chatwithdoc.flow.ciandt.cn
+ENV FLASK_APP=app.py
+ENV EDITION=SELF_HOSTED
+ENV DEPLOY_ENV=PRODUCTION
+ENV CONSOLE_API_URL=https://chatwithdoc-api.platform.ciandt.cn
+ENV CONSOLE_WEB_URL=https://chatwithdoc-api.platform.ciandt.cn
+ENV SERVICE_API_URL=https://chatwithdoc-api.platform.ciandt.cn
+ENV APP_WEB_URL=https://chatwithdoc.platform.ciandt.cn
 
 EXPOSE 5001
 
