@@ -1,6 +1,7 @@
 'use client'
 import type { FC } from 'react'
 import React from 'react'
+import cn from 'classnames'
 import { useWorkflow } from '../../../hooks'
 import { BlockEnum } from '../../../types'
 import { VarBlockIcon } from '../../../block-icon'
@@ -10,6 +11,7 @@ import { Variable02 } from '@/app/components/base/icons/src/vender/solid/develop
 type Props = {
   nodeId: string
   value: string
+  className?: string
 }
 
 const VAR_PLACEHOLDER = '@#!@#!'
@@ -17,9 +19,10 @@ const VAR_PLACEHOLDER = '@#!@#!'
 const ReadonlyInputWithSelectVar: FC<Props> = ({
   nodeId,
   value,
+  className,
 }) => {
-  const { getBeforeNodesInSameBranch } = useWorkflow()
-  const availableNodes = getBeforeNodesInSameBranch(nodeId)
+  const { getBeforeNodesInSameBranchIncludeParent } = useWorkflow()
+  const availableNodes = getBeforeNodesInSameBranchIncludeParent(nodeId)
   const startNode = availableNodes.find((node: any) => {
     return node.data.type === BlockEnum.Start
   })
@@ -64,7 +67,7 @@ const ReadonlyInputWithSelectVar: FC<Props> = ({
   })()
 
   return (
-    <div className='break-all text-xs'>
+    <div className={cn('break-all text-xs', className)}>
       {res}
     </div>
   )

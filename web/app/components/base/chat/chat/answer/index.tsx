@@ -4,10 +4,12 @@ import type {
 } from 'react'
 import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePathname } from 'next/navigation'
 import type {
   ChatConfig,
   ChatItem,
 } from '../../types'
+import { useChatContext } from '../context'
 import Operation from './operation'
 import AgentContent from './agent-content'
 import BasicContent from './basic-content'
@@ -16,10 +18,11 @@ import More from './more'
 import WorkflowProcess from './workflow-process'
 import { AnswerTriangle } from '@/app/components/base/icons/src/vender/solid/general'
 import { MessageFast } from '@/app/components/base/icons/src/vender/solid/communication'
-import LoadingAnim from '@/app/components/app/chat/loading-anim'
-import Citation from '@/app/components/app/chat/citation'
+import LoadingAnim from '@/app/components/base/chat/chat/loading-anim'
+import Citation from '@/app/components/base/chat/chat/citation'
 import { EditTitle } from '@/app/components/app/annotation/edit-annotation-modal/edit-item'
 import type { Emoji } from '@/app/components/tools/types'
+import type { AppData } from '@/models/share'
 
 type AnswerProps = {
   item: ChatItem
@@ -31,6 +34,8 @@ type AnswerProps = {
   allToolIcons?: Record<string, string | Emoji>
   showPromptLog?: boolean
   chatAnswerContainerInner?: string
+  hideProcessDetail?: boolean
+  appData?: AppData
 }
 const Answer: FC<AnswerProps> = ({
   item,
@@ -42,6 +47,8 @@ const Answer: FC<AnswerProps> = ({
   allToolIcons,
   showPromptLog,
   chatAnswerContainerInner,
+  hideProcessDetail,
+  appData,
 }) => {
   const { t } = useTranslation()
   const {
@@ -54,29 +61,32 @@ const Answer: FC<AnswerProps> = ({
   } = item
   const hasAgentThoughts = !!agent_thoughts?.length
 
-  const [containerWidth, setContainerWidth] = useState(0)
+  const [containerWidth] = useState(0)
   const [contentWidth, setContentWidth] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
-  const getContainerWidth = () => {
-    if (containerRef.current)
-      setContainerWidth(containerRef.current?.clientWidth + 16)
-  }
+  const {
+    config: chatContextConfig,
+  } = useChatContext()
+
+  const voiceRef = useRef(chatContextConfig?.text_to_speech?.voice)
   const getContentWidth = () => {
     if (contentRef.current)
       setContentWidth(contentRef.current?.clientWidth)
   }
 
   useEffect(() => {
-    getContainerWidth()
-  }, [])
+    voiceRef.current = chatContextConfig?.text_to_speech?.voice
+  }
+  , [chatContextConfig?.text_to_speech?.voice])
 
   useEffect(() => {
     if (!responding)
       getContentWidth()
   }, [responding])
 
+  const router = usePathname()
   return (
     <div className='flex mb-2 last:mb-0'>
       <div className='shrink-0 relative w-10 h-10'>
@@ -95,7 +105,7 @@ const Answer: FC<AnswerProps> = ({
           )
         }
       </div>
-      <div className='chat-answer-container grow w-0 ml-4' ref={containerRef}>
+      <div className='chat-answer-container group grow w-0 ml-4' ref={containerRef}>
         <div className={`group relative pr-10 ${chatAnswerContainerInner}`}>
           <AnswerTriangle className='absolute -left-2 top-0 w-2 h-3 text-gray-100' />
           <div
@@ -127,9 +137,26 @@ const Answer: FC<AnswerProps> = ({
                 />
               )
             }
+            {/** Render the normal steps */}
             {
-              workflowProcess && (
-                <WorkflowProcess data={workflowProcess} hideInfo />
+              workflowProcess && !hideProcessDetail && !router.startsWith('/chat') && (
+                <WorkflowProcess
+                  data={workflowProcess}
+                  item={item}
+                  hideInfo
+                  hideProcessDetail={hideProcessDetail}
+                />
+              )
+            }
+            {/** Hide workflow steps by it's settings in siteInfo */}
+            {
+              workflowProcess && hideProcessDetail && appData && appData.site.show_workflow_steps && (
+                <WorkflowProcess
+                  data={workflowProcess}
+                  item={item}
+                  hideInfo
+                  hideProcessDetail={hideProcessDetail}
+                />
               )
             }
             {
