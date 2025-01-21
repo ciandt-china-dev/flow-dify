@@ -67,8 +67,10 @@ const Sidebar = () => {
             <AppIcon
               className='mr-3'
               size='small'
+              iconType={appData?.site.icon_type}
               icon={appData?.site.icon}
               background={appData?.site.icon_background}
+              imageUrl={appData?.site.icon_url}
             />
             <div className='py-1 text-base font-semibold text-gray-800'>
               {appData?.site.title}
@@ -113,15 +115,16 @@ const Sidebar = () => {
           )
         }
       </div>
-      <div className='px-4 pb-4 text-xs text-gray-400'>
-        © {appData?.site.copyright || appData?.site.title} {(new Date()).getFullYear()}
-      </div>
+      {appData?.site.copyright && (
+        <div className='px-4 pb-4 text-xs text-gray-400'>
+          © {(new Date()).getFullYear()} {appData?.site.copyright}
+        </div>
+      )}
       {!!showConfirm && (
         <Confirm
           title={t('share.chat.deleteConversation.title')}
           content={t('share.chat.deleteConversation.content') || ''}
           isShow
-          onClose={handleCancelConfirm}
           onCancel={handleCancelConfirm}
           onConfirm={handleDelete}
         />

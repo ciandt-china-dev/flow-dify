@@ -4,8 +4,9 @@ const translation = {
   dateTimeFormat: 'MM/DD/YYYY hh:mm A',
   table: {
     header: {
-      time: 'Tiempo',
-      endUser: 'Usuario Final',
+      updatedTime: 'Hora actualizada',
+      time: 'Hora creada',
+      endUser: 'Usuario Final o Cuenta',
       input: 'Entrada',
       output: 'Salida',
       summary: 'Título',
@@ -16,7 +17,7 @@ const translation = {
       status: 'ESTADO',
       runtime: 'TIEMPO DE EJECUCIÓN',
       tokens: 'TOKENS',
-      user: 'USUARIO FINAL',
+      user: 'USUARIO FINAL O CUENTA',
       version: 'VERSIÓN',
     },
     pagination: {
@@ -51,6 +52,7 @@ const translation = {
     },
     variables: 'Variables',
     uploadImages: 'Imágenes Cargadas',
+    modelParams: 'Parámetros del modelo',
   },
   filter: {
     period: {
@@ -69,12 +71,17 @@ const translation = {
       annotated: 'Mejoras Anotadas ({{count}} elementos)',
       not_annotated: 'No Anotadas',
     },
+    sortBy: 'Ordenar por:',
+    descending: 'descendente',
+    ascending: 'ascendente',
   },
   workflowTitle: 'Registros de Flujo de Trabajo',
   workflowSubtitle: 'El registro registró la operación de Automate.',
   runDetail: {
     title: 'Registro de Conversación',
     workflowTitle: 'Detalle del Registro',
+    fileListLabel: 'Detalles del archivo',
+    fileListDetail: 'Detalle',
   },
   promptLog: 'Registro de Indicación',
   agentLog: 'Registro de Agente',

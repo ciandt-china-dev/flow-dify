@@ -32,6 +32,8 @@ const translation = {
     manageInTools: 'उपकरणों में प्रबंधित करें',
     emptyTitle: 'कोई कार्यप्रवाह उपकरण उपलब्ध नहीं',
     emptyTip: 'कार्यप्रवाह -> उपकरण के रूप में प्रकाशित पर जाएं',
+    emptyTipCustom: 'एक कस्टम टूल बनाएं',
+    emptyTitleCustom: 'कोई कस्टम टूल उपलब्ध नहीं है',
   },
   createTool: {
     title: 'कस्टम उपकरण बनाएं',
@@ -103,6 +105,7 @@ const translation = {
       label: 'टैग',
       labelPlaceholder: 'टैग चुनें(वैकल्पिक)',
       description: 'पैरामीटर के अर्थ का विवरण',
+      descriptionPlaceholder: 'पैरामीटर के अर्थ का विवरण',
     },
     customDisclaimer: 'कस्टम अस्वीकरण',
     customDisclaimerPlaceholder: 'कस्टम अस्वीकरण दर्ज करें',
