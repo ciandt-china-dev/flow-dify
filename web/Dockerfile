@@ -25,7 +25,7 @@ RUN yarn install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app/web
 COPY --from=packages /app/web/ .
-COPY . .
+COPY web/. .
 
 RUN yarn build
 
@@ -36,8 +36,8 @@ FROM base AS production
 ENV NODE_ENV=production
 ENV EDITION=SELF_HOSTED
 ENV DEPLOY_ENV=PRODUCTION
-ENV CONSOLE_API_URL=http://127.0.0.1:5001
-ENV APP_API_URL=http://127.0.0.1:5001
+ENV CONSOLE_API_URL=https://chatwithdoc-api.platform.ciandt.cn
+ENV APP_API_URL=https://chatwithdoc-api.platform.ciandt.cn
 ENV PORT=3000
 ENV NEXT_TELEMETRY_DISABLED=1
 
