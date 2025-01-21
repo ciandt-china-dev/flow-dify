@@ -27,7 +27,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
 
 # Install Python dependencies
-COPY pyproject.toml poetry.lock ./
+COPY api/pyproject.toml api/poetry.lock ./
 RUN poetry install --sync --no-cache --no-root
 
 # production stage
@@ -70,7 +70,7 @@ ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"
 
 # Copy source code
-COPY . /app/api/
+COPY api/ /app/api/
 
 # Copy entrypoint
 COPY docker/entrypoint.sh /entrypoint.sh
