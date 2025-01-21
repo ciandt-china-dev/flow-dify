@@ -25,7 +25,7 @@ RUN yarn install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app/web
 COPY --from=packages /app/web/ .
-COPY web/. .
+COPY web/ .
 
 RUN yarn build
 
