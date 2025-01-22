@@ -1,4 +1,4 @@
-from dashscope.common.error import (
+from dashscope.common.error import (  # type: ignore
     AuthenticationError,
     InvalidParameter,
     RequestFailure,
@@ -21,7 +21,7 @@ class _CommonTongyi:
     @staticmethod
     def _to_credential_kwargs(credentials: dict) -> dict:
         credentials_kwargs = {
-            "dashscope_api_key": credentials['dashscope_api_key'],
+            "dashscope_api_key": credentials["dashscope_api_key"],
         }
 
         return credentials_kwargs
@@ -51,5 +51,5 @@ class _CommonTongyi:
                 InvalidParameter,
                 UnsupportedModel,
                 UnsupportedHTTPMethod,
-            ]
+            ],
         }

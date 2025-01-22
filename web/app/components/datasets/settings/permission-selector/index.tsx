@@ -9,7 +9,7 @@ import {
   PortalToFollowElemTrigger,
 } from '@/app/components/base/portal-to-follow-elem'
 import Avatar from '@/app/components/base/avatar'
-import SearchInput from '@/app/components/base/search-input'
+import Input from '@/app/components/base/input'
 import { Check } from '@/app/components/base/icons/src/vender/line/general'
 import { Users01, UsersPlus } from '@/app/components/base/icons/src/vender/solid/users'
 import type { DatasetPermission } from '@/models/datasets'
@@ -51,9 +51,11 @@ const PermissionSelector = ({ disabled, permission, value, memberList, onChange,
       ...memberList.filter(member => member.id !== userProfile.id).filter(member => value.includes(member.id)),
     ].map(member => member.name).join(', ')
   }, [userProfile, value, memberList])
+
   const showMe = useMemo(() => {
     return userProfile.name.includes(searchKeywords) || userProfile.email.includes(searchKeywords)
   }, [searchKeywords, userProfile])
+
   const filteredMemberList = useMemo(() => {
     return memberList.filter(member => (member.name.includes(searchKeywords) || member.email.includes(searchKeywords)) && member.id !== userProfile.id && ['owner', 'admin', 'editor', 'dataset_operator'].includes(member.role))
   }, [memberList, searchKeywords, userProfile])
@@ -97,7 +99,7 @@ const PermissionSelector = ({ disabled, permission, value, memberList, onChange,
           )}
         </PortalToFollowElemTrigger>
         <PortalToFollowElemContent className='z-[1002]'>
-          <div className='relative w-[480px] bg-white rounded-lg border-[0.5px] bg-gray-200 shadow-lg'>
+          <div className='relative w-[480px] rounded-lg border-[0.5px] bg-white shadow-lg'>
             <div className='p-1'>
               <div className='pl-3 pr-2 py-1 rounded-lg hover:bg-gray-50 cursor-pointer' onClick={() => {
                 onChange('only_me')
@@ -137,7 +139,13 @@ const PermissionSelector = ({ disabled, permission, value, memberList, onChange,
             {permission === 'partial_members' && (
               <div className='max-h-[360px] border-t-[1px] border-gray-100 p-1 overflow-y-auto'>
                 <div className='sticky left-0 top-0 p-2 pb-1 bg-white'>
-                  <SearchInput white value={keywords} onChange={handleKeywordsChange} />
+                  <Input
+                    showLeftIcon
+                    showClearIcon
+                    value={keywords}
+                    onChange={e => handleKeywordsChange(e.target.value)}
+                    onClear={() => handleKeywordsChange('')}
+                  />
                 </div>
                 {showMe && (
                   <div className='pl-3 pr-[10px] py-1 flex gap-2 items-center rounded-lg'>
