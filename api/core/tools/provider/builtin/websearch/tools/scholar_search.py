@@ -43,7 +43,7 @@ class SerplyApi:
     def parse_results(res: dict) -> str:
         """Process response from Serply News Search."""
         articles = res.get("articles", [])
-        if not articles:
+        if not res or "articles" not in res:
             raise ValueError(f"Got error from Serply: {res}")
 
         string = []
@@ -55,14 +55,16 @@ class SerplyApi:
                     link = article["link"]
                 authors = [author["name"] for author in article["author"]["authors"]]
                 string.append(
-                    "\n".join([
-                        f"Title: {article['title']}",
-                        f"Link: {link}",
-                        f"Description: {article['description']}",
-                        f"Cite: {article['cite']}",
-                        f"Authors: {', '.join(authors)}",
-                        "---",
-                    ])
+                    "\n".join(
+                        [
+                            f"Title: {article['title']}",
+                            f"Link: {link}",
+                            f"Description: {article['description']}",
+                            f"Cite: {article['cite']}",
+                            f"Authors: {', '.join(authors)}",
+                            "---",
+                        ]
+                    )
                 )
             except KeyError:
                 continue

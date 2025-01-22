@@ -1,6 +1,6 @@
 'use client'
 import type { FC } from 'react'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   RiErrorWarningFill,
@@ -36,6 +36,7 @@ import { DEFAULT_VALUE_MAX_LEN, appDefaultIconBackground } from '@/config'
 import Toast from '@/app/components/base/toast'
 import type { VisionFile, VisionSettings } from '@/types/app'
 import { Resolution, TransferMethod } from '@/types/app'
+import { useAppFavicon } from '@/hooks/use-app-favicon'
 
 const GROUP_SIZE = 5 // to avoid RPM(Request per minute) limit. The group task finished then the next group.
 enum TaskStatus {
@@ -92,7 +93,12 @@ const TextGeneration: FC<IMainProps> = ({
   // Notice this situation isCallBatchAPI but not in batch tab
   const [isCallBatchAPI, setIsCallBatchAPI] = useState(false)
   const isInBatchTab = currentTab === 'batch'
-  const [inputs, setInputs] = useState<Record<string, any>>({})
+  const [inputs, doSetInputs] = useState<Record<string, any>>({})
+  const inputsRef = useRef(inputs)
+  const setInputs = useCallback((newInputs: Record<string, any>) => {
+    doSetInputs(newInputs)
+    inputsRef.current = newInputs
+  }, [])
   const [appId, setAppId] = useState<string>('')
   const [siteInfo, setSiteInfo] = useState<SiteInfo | null>(null)
   const [canReplaceLogo, setCanReplaceLogo] = useState<boolean>(false)
@@ -162,8 +168,8 @@ const TextGeneration: FC<IMainProps> = ({
   }
   const allSuccessTaskList = allTaskList.filter(task => task.status === TaskStatus.completed)
   const allFailedTaskList = allTaskList.filter(task => task.status === TaskStatus.failed)
-  const allTaskFinished = allTaskList.every(task => task.status === TaskStatus.completed)
-  const allTaskRuned = allTaskList.every(task => [TaskStatus.completed, TaskStatus.failed].includes(task.status))
+  const allTasksFinished = allTaskList.every(task => task.status === TaskStatus.completed)
+  const allTasksRun = allTaskList.every(task => [TaskStatus.completed, TaskStatus.failed].includes(task.status))
   const [batchCompletionRes, doSetBatchCompletionRes] = useState<Record<string, string>>({})
   const batchCompletionResRef = useRef<Record<string, string>>({})
   const setBatchCompletionRes = (res: Record<string, string>) => {
@@ -285,7 +291,7 @@ const TextGeneration: FC<IMainProps> = ({
   const handleRunBatch = (data: string[][]) => {
     if (!checkBatchInputs(data))
       return
-    if (!allTaskFinished) {
+    if (!allTasksFinished) {
       notify({ type: 'info', message: t('appDebug.errorMessage.waitForBatchResponse') })
       return
     }
@@ -317,17 +323,17 @@ const TextGeneration: FC<IMainProps> = ({
     showResSidebar()
   }
   const handleCompleted = (completionRes: string, taskId?: number, isSuccess?: boolean) => {
-    const allTasklistLatest = getLatestTaskList()
+    const allTaskListLatest = getLatestTaskList()
     const batchCompletionResLatest = getBatchCompletionRes()
-    const pendingTaskList = allTasklistLatest.filter(task => task.status === TaskStatus.pending)
-    const hadRunedTaskNum = 1 + allTasklistLatest.filter(task => [TaskStatus.completed, TaskStatus.failed].includes(task.status)).length
-    const needToAddNextGroupTask = (getCurrGroupNum() !== hadRunedTaskNum) && pendingTaskList.length > 0 && (hadRunedTaskNum % GROUP_SIZE === 0 || (allTasklistLatest.length - hadRunedTaskNum < GROUP_SIZE))
+    const pendingTaskList = allTaskListLatest.filter(task => task.status === TaskStatus.pending)
+    const runTasksCount = 1 + allTaskListLatest.filter(task => [TaskStatus.completed, TaskStatus.failed].includes(task.status)).length
+    const needToAddNextGroupTask = (getCurrGroupNum() !== runTasksCount) && pendingTaskList.length > 0 && (runTasksCount % GROUP_SIZE === 0 || (allTaskListLatest.length - runTasksCount < GROUP_SIZE))
     // avoid add many task at the same time
     if (needToAddNextGroupTask)
-      setCurrGroupNum(hadRunedTaskNum)
+      setCurrGroupNum(runTasksCount)
 
     const nextPendingTaskIds = needToAddNextGroupTask ? pendingTaskList.slice(0, GROUP_SIZE).map(item => item.id) : []
-    const newAllTaskList = allTasklistLatest.map((item) => {
+    const newAllTaskList = allTaskListLatest.map((item) => {
       if (item.id === taskId) {
         return {
           ...item,
@@ -363,6 +369,8 @@ const TextGeneration: FC<IMainProps> = ({
             title: installedAppInfo?.app.name,
             prompt_public: false,
             copyright: '',
+            icon: installedAppInfo?.app.icon,
+            icon_background: installedAppInfo?.app.icon_background,
           },
           plan: 'basic',
         }
@@ -385,12 +393,16 @@ const TextGeneration: FC<IMainProps> = ({
 
       const { user_input_form, more_like_this, file_upload, text_to_speech }: any = appParams
       setVisionConfig({
-        ...file_upload.image,
+        // legacy of image upload compatible
+        ...file_upload,
+        transfer_methods: file_upload.allowed_file_upload_methods || file_upload.allowed_upload_methods,
+        // legacy of image upload compatible
         image_file_size_limit: appParams?.system_parameters?.image_file_size_limit,
+        fileUploadConfig: appParams?.system_parameters,
       })
       const prompt_variables = userInputsFormToPromptVariables(user_input_form)
       setPromptConfig({
-        prompt_template: '', // placeholder for feture
+        prompt_template: '', // placeholder for future
         prompt_variables,
       } as PromptConfig)
       setMoreLikeThisConfig(more_like_this)
@@ -407,6 +419,14 @@ const TextGeneration: FC<IMainProps> = ({
         document.title = `${siteInfo.title} - Powered by Dify`
     }
   }, [siteInfo?.title, canReplaceLogo])
+
+  useAppFavicon({
+    enable: !isInstalledApp,
+    icon_type: siteInfo?.icon_type,
+    icon: siteInfo?.icon,
+    icon_background: siteInfo?.icon_background,
+    icon_url: siteInfo?.icon_url,
+  })
 
   const [isShowResSidebar, { setTrue: doShowResSidebar, setFalse: hideResSidebar }] = useBoolean(false)
   const showResSidebar = () => {
@@ -540,7 +560,13 @@ const TextGeneration: FC<IMainProps> = ({
           <div className='mb-6'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center space-x-3'>
-                <AppIcon size="small" icon={siteInfo.icon} background={siteInfo.icon_background || appDefaultIconBackground} />
+                <AppIcon
+                  size="small"
+                  iconType={siteInfo.icon_type}
+                  icon={siteInfo.icon}
+                  background={siteInfo.icon_background || appDefaultIconBackground}
+                  imageUrl={siteInfo.icon_url}
+                />
                 <div className='text-lg font-semibold text-gray-800'>{siteInfo.title}</div>
               </div>
               {!isPC && (
@@ -570,7 +596,7 @@ const TextGeneration: FC<IMainProps> = ({
                   isRight: true,
                   extra: savedMessages.length > 0
                     ? (
-                      <div className='ml-1 flext items-center h-5 px-1.5 rounded-md border border-gray-200 text-gray-500 text-xs font-medium'>
+                      <div className='ml-1 flex items-center h-5 px-1.5 rounded-md border border-gray-200 text-gray-500 text-xs font-medium'>
                         {savedMessages.length}
                       </div>
                     )
@@ -586,6 +612,7 @@ const TextGeneration: FC<IMainProps> = ({
               <RunOnce
                 siteInfo={siteInfo}
                 inputs={inputs}
+                inputsRef={inputsRef}
                 onInputsChange={setInputs}
                 promptConfig={promptConfig}
                 onSend={handleSend}
@@ -597,7 +624,7 @@ const TextGeneration: FC<IMainProps> = ({
               <RunBatch
                 vars={promptConfig.prompt_variables}
                 onSend={handleRunBatch}
-                isAllFinished={allTaskRuned}
+                isAllFinished={allTasksRun}
               />
             </div>
 
@@ -617,10 +644,12 @@ const TextGeneration: FC<IMainProps> = ({
             isInstalledApp ? 'left-[248px]' : 'left-8',
             'fixed  bottom-4  flex space-x-2 text-gray-400 font-normal text-xs',
           )}>
-            <div className="">© {siteInfo.copyright || siteInfo.title} {(new Date()).getFullYear()}</div>
+            {siteInfo.copyright && (
+              <div className="">© {(new Date()).getFullYear()} {siteInfo.copyright}</div>
+            )}
             {siteInfo.privacy_policy && (
               <>
-                <div>·</div>
+                {siteInfo.copyright && <div>·</div>}
                 <div>{t('share.chat.privacyPolicyLeft')}
                   <a
                     className='text-gray-500 px-1'

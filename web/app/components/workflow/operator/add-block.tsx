@@ -55,7 +55,7 @@ const AddBlock = ({
     } = store.getState()
     const nodes = getNodes()
     const nodesWithSameType = nodes.filter(node => node.data.type === type)
-    const newNode = generateNewNode({
+    const { newNode } = generateNewNode({
       data: {
         ...NODES_INITIAL_DATA[type],
         title: nodesWithSameType.length > 0 ? `${t(`workflow.blocks.${type}`)} ${nodesWithSameType.length + 1}` : t(`workflow.blocks.${type}`),
@@ -78,9 +78,9 @@ const AddBlock = ({
         title={t('workflow.common.addBlock')}
       >
         <div className={cn(
-          'flex items-center justify-center w-8 h-8 rounded-lg hover:bg-black/5 hover:text-gray-700 cursor-pointer',
-          `${nodesReadOnly && '!cursor-not-allowed opacity-50'}`,
-          open && '!bg-black/5',
+          'flex items-center justify-center w-8 h-8 rounded-lg text-text-tertiary hover:bg-state-base-hover hover:text-text-secondary cursor-pointer',
+          `${nodesReadOnly && 'cursor-not-allowed text-text-disabled hover:bg-transparent hover:text-text-disabled'}`,
+          open && 'bg-state-accent-active text-text-accent',
         )}>
           <RiAddCircleFill className='w-4 h-4' />
         </div>

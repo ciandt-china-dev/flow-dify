@@ -1,7 +1,7 @@
 from typing import Any
 
-from twilio.base.exceptions import TwilioRestException
-from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException  # type: ignore
+from twilio.rest import Client  # type: ignore
 
 from core.tools.errors import ToolProviderCredentialValidationError
 from core.tools.provider.builtin_tool_provider import BuiltinToolProviderController
@@ -14,7 +14,7 @@ class TwilioProvider(BuiltinToolProviderController):
             account_sid = credentials["account_sid"]
             auth_token = credentials["auth_token"]
             from_number = credentials["from_number"]
-            
+
             # Initialize twilio client
             client = Client(account_sid, auth_token)
 
@@ -27,4 +27,3 @@ class TwilioProvider(BuiltinToolProviderController):
             raise ToolProviderCredentialValidationError(f"Missing required credential: {e}") from e
         except Exception as e:
             raise ToolProviderCredentialValidationError(str(e))
-        

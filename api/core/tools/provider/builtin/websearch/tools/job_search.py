@@ -43,21 +43,23 @@ class SerplyApi:
     def parse_results(res: dict) -> str:
         """Process response from Serply Job Search."""
         jobs = res.get("jobs", [])
-        if not jobs:
+        if not res or "jobs" not in res:
             raise ValueError(f"Got error from Serply: {res}")
 
         string = []
         for job in jobs[:10]:
             try:
                 string.append(
-                    "\n".join([
-                        f"Position: {job['position']}",
-                        f"Employer: {job['employer']}",
-                        f"Location: {job['location']}",
-                        f"Link: {job['link']}",
-                        f"""Highest: {", ".join(list(job["highlights"]))}""",
-                        "---",
-                    ])
+                    "\n".join(
+                        [
+                            f"Position: {job['position']}",
+                            f"Employer: {job['employer']}",
+                            f"Location: {job['location']}",
+                            f"Link: {job['link']}",
+                            f"""Highest: {", ".join(list(job["highlights"]))}""",
+                            "---",
+                        ]
+                    )
                 )
             except KeyError:
                 continue

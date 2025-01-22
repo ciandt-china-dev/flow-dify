@@ -27,6 +27,14 @@ const translation = {
       longDescription: ' про метод вибірки, ви можете змінити це будь-коли в налаштуваннях бази знань.',
     },
     save: 'Зберегти',
+    me: '(Ви)',
+    permissionsInvitedMembers: 'Часткові члени команди',
+    externalKnowledgeAPI: 'API зовнішніх знань',
+    externalKnowledgeID: 'Зовнішній ідентифікатор знань',
+    retrievalSettings: 'Налаштування отримання',
+    helpText: 'Дізнайтеся, як написати хороший опис набору даних.',
+    indexMethodChangeToEconomyDisabledTip: 'Недоступно для пониження з HQ до ECO',
+    upgradeHighQualityTip: 'Після оновлення до режиму високої якості повернення до економного режиму недоступне',
   },
 }
 
