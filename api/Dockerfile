@@ -41,6 +41,7 @@ ENV CONSOLE_WEB_URL=https://chatwithdoc-api.platform.ciandt.cn
 ENV SERVICE_API_URL=https://chatwithdoc-api.platform.ciandt.cn
 ENV APP_WEB_URL=https://chatwithdoc.platform.ciandt.cn
 ENV CODE_MAX_DEPTH=10
+ENV WORKFLOW_CALL_MAX_DEPTH=10
 
 EXPOSE 5001
 
